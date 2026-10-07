@@ -1,1 +1,129 @@
-点击夜空，流星会更多   放飞
+```
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>星空 · 许愿</title>
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#03030a;}
+canvas{display:block;position:fixed;inset:0;}
+#bar{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+display:flex;gap:8px;width:min(90vw,420px);z-index:2;}
+#wish{flex:1;padding:12px 14px;border-radius:22px;border:1px solid rgba(255,255,255,.25);
+background:rgba(255,255,255,.08);color:#eaeaff;font-size:16px;outline:none;}
+#wish::placeholder{color:rgba(255,255,255,.45);}
+#send{padding:12px 18px;border-radius:22px;border:0;cursor:pointer;
+background:rgba(255,255,255,.9);color:#111;font-size:16px;}
+#tip{position:fixed;top:18px;left:0;right:0;text-align:center;
+color:rgba(255,255,255,.35);font-size:13px;
+font-family:system-ui,sans-serif;pointer-events:none;z-index:2;}
+</style>
+</head>
+<body>
+<div id="tip">点击夜空，流星会更多</div>
+<div id="bar">
+<input id="wish" placeholder="写下你的愿望…" maxlength="24">
+<button id="send">放飞</button>
+</div>
+<canvas id="sky"></canvas>
+<script>
+const cv = document.getElementById('sky');
+const ctx = cv.getContext('2d');
+let W, H;
+function resize(){
+W = cv.width = innerWidth;
+H = cv.height = innerHeight;
+}
+resize();
+addEventListener('resize', resize);
+// 星星
+let stars = [];
+for(let i=0;i<220;i++){
+stars.push({x:Math.random(), y:Math.random(), r:Math.random()*1.2+.3, p:Math.random()*6.28});
+}
+// 流星
+let meteors = [];
+function makeMeteor(wish){
+const fromLeft = Math.random() < .5;
+const speed = 1.8 + Math.random()*1.6;
+return {
+x: fromLeft ? -120 : W + 120,
+y: Math.random()*H*0.6 - 60,
+vx: (fromLeft ? 1 : -1) * speed,
+vy: speed * 0.55,
+len: 150 + Math.random()*180,
+wish: wish || ''
+};
+}
+for(let i=0;i<10;i++) meteors.push(makeMeteor());
+setInterval(function(){
+if(meteors.length < 30) meteors.push(makeMeteor());
+}, 400);
+// 点夜空
+cv.addEventListener('click', function(e){
+const m = makeMeteor();
+m.y = e.clientY - H*0.15;
+meteors.push(m);
+});
+// 许愿
+const input = document.getElementById('wish');
+function sendWish(){
+const t = input.value.trim();
+if(!t) return;
+const m = makeMeteor(t);
+m.y = H*0.45;
+meteors.push(m);
+input.value = '';
+}
+document.getElementById('send').addEventListener('click', sendWish);
+input.addEventListener('keydown', function(e){
+if(e.key === 'Enter') sendWish();
+});
+function bg(){
+const g = ctx.createLinearGradient(0,0,0,H);
+g.addColorStop(0,'#05060f');
+g.addColorStop(.6,'#080a1a');
+g.addColorStop(1,'#0b0b18');
+ctx.fillStyle = g;
+ctx.fillRect(0,0,W,H);
+}
+function draw(t){
+bg();
+for(const s of stars){
+ctx.globalAlpha = .35 + .65*Math.abs(Math.sin(t/1200 + s.p));
+ctx.fillStyle = '#dfe6ff';
+ctx.beginPath();
+ctx.arc(s.x*W, s.y*H, s.r, 0, 6.29);
+ctx.fill();
+}
+ctx.globalAlpha = 1;
+ctx.font = '16px system-ui, sans-serif';
+for(let i=meteors.length-1;i>=0;i--){
+const m = meteors[i];
+m.x += m.vx;
+m.y += m.vy;
+const d = Math.hypot(m.vx, m.vy);
+const tx = m.x - m.vx/d*m.len, ty = m.y - m.vy/d*m.len;
+const g = ctx.createLinearGradient(tx,ty,m.x,m.y);
+g.addColorStop(0,'rgba(255,255,255,0)');
+g.addColorStop(1,'rgba(255,255,255,.95)');
+ctx.strokeStyle = g;
+ctx.lineWidth = m.wish ? 2.4 : 1.8;
+ctx.beginPath();
+ctx.moveTo(tx,ty);
+ctx.lineTo(m.x,m.y);
+ctx.stroke();
+if(m.wish){
+ctx.fillStyle = '#cfd8ff';
+ctx.fillText(m.wish, m.x + 10, m.y - 6);
+}
+if(m.x < -400 || m.x > W+400 || m.y > H+300) meteors.splice(i,1);
+}
+requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>
+```
