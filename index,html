@@ -1,4 +1,3 @@
-```
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -126,4 +125,3 @@ requestAnimationFrame(draw);
 </script>
 </body>
 </html>
-```
