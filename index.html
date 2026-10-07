@@ -48,43 +48,40 @@ for(let i=0;i<220;i++){
   stars.push({x:Math.random(), y:Math.random(), r:Math.random()*1.2+.3, p:Math.random()*6.28});
 }
 
-// 流星：全部同一个角度，只在横向轨道上错开 → 永远平行，不会交叉
+// 流星：统一角度 → 永远平行不交叉；贴着屏幕边缘出生 → 天上一直是满的
 const DEG = 40 * Math.PI/180;
-const SPDIRX = -Math.cos(DEG), SPDIRY = Math.sin(DEG);   // 飞行方向：左下
-const NX = Math.sin(DEG), NY = Math.cos(DEG);            // 轨道横向坐标
+const SPX = -Math.cos(DEG), SPY = Math.sin(DEG);   // 飞行方向：左下
 
 let meteors = [];
-let trackU = 0;
-
-function makeMeteor(uIn, kIn){
+function makeMeteor(cx, cy){
   const sp = 3.0 + Math.random()*1.5;
-  const uMax = W*NX + H*NY;
-  const space = 56;                        // 相邻轨道间距，越小越密
-
-  trackU += space;
-  if(trackU > uMax + space) trackU = Math.random()*space;
-
-  const u = (uIn === undefined) ? trackU + (Math.random()-0.5)*8 : uIn;
-  const k = (kIn === undefined) ? Math.max(W,H)*(0.35 + Math.random()*1.0) : kIn;
-
+  let x, y;
+  if(cx !== undefined){                 // 点夜空：从那个点右上方过来，正好经过它
+    x = cx + 160;
+    y = cy - 134;
+  }else if(Math.random() < 0.55){       // 多数从右边缘飞进来
+    x = W + 30 + Math.random()*90;
+    y = -40 + Math.random()*(H + 80);
+  }else{                                // 少数从上边缘落下来
+    x = -0.25*W + Math.random()*1.3*W;
+    y = -30 - Math.random()*120;
+  }
   return {
-    x: u*NX + k*Math.cos(DEG),
-    y: u*NY - k*Math.sin(DEG),
-    vx: SPDIRX*sp,
-    vy: SPDIRY*sp,
+    x: x, y: y,
+    vx: SPX*sp,
+    vy: SPY*sp,
     len: 200 + Math.random()*300,
     w: 1 + Math.random()*0.8,
     flick: Math.random()*6.28,
     freq: 3 + Math.random()*3
   };
 }
-for(let i=0;i<20;i++) meteors.push(makeMeteor());
-setInterval(function(){ if(meteors.length < 60) meteors.push(makeMeteor()); }, 220);
+for(let i=0;i<22;i++) meteors.push(makeMeteor());
+setInterval(function(){ if(meteors.length < 55) meteors.push(makeMeteor()); }, 200);
 
-// 点夜空：沿着经过那个点的那条轨道来一颗
+// 点夜空
 cv.addEventListener('click', function(e){
-  const u = e.clientX*NX + e.clientY*NY;
-  meteors.push(makeMeteor(u, Math.max(W,H)*0.9));
+  meteors.push(makeMeteor(e.clientX, e.clientY));
 });
 
 // 许愿：文字在屏幕中间亮起来，发光停一下，再淡掉
@@ -169,7 +166,7 @@ function draw(t){
     ctx.fillStyle = hg;
     ctx.beginPath(); ctx.arc(m.x,m.y,10*m.w,0,6.29); ctx.fill();
 
-    if(m.x < -600 || m.y > H+600) meteors.splice(i,1);
+    if(m.x < -260 || m.y > H+260) meteors.splice(i,1);
   }
   ctx.globalCompositeOperation = 'source-over';
 
