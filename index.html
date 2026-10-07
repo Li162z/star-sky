@@ -48,30 +48,38 @@ for(let i=0;i<220;i++){
   stars.push({x:Math.random(), y:Math.random(), r:Math.random()*1.2+.3, p:Math.random()*6.28});
 }
 
-// 流星：全部朝左下飞
+// 流星：全部朝左下飞，从右边和上方进来，铺满整屏
 let meteors = [];
 function makeMeteor(){
   const sp = 2.6 + Math.random()*2.2;
   const deg = (35 + Math.random()*15) * Math.PI/180;
+  const cos = Math.cos(deg), sin = Math.sin(deg);
+  let x, y;
+  if(Math.random() < 0.6){                 // 多数从右边飞进来
+    x = W + 120 + Math.random()*320;
+    y = -0.15*H + Math.random()*1.05*H;
+  }else{                                   // 少数从上方落下来
+    x = -0.2*W + Math.random()*1.5*W;
+    y = -170 - Math.random()*260;
+  }
   return {
-    x: W*0.25 + Math.random()*W*1.1,
-    y: -100 - Math.random()*H*0.6,
-    vx: -sp*Math.cos(deg),
-    vy:  sp*Math.sin(deg),
+    x: x, y: y,
+    vx: -sp*cos,
+    vy:  sp*sin,
     len: 220 + Math.random()*280,
     w: 1 + Math.random()*0.8,
     flick: Math.random()*6.28,
     freq: 3 + Math.random()*3
   };
 }
-for(let i=0;i<14;i++) meteors.push(makeMeteor());
-setInterval(function(){ if(meteors.length < 36) meteors.push(makeMeteor()); }, 300);
+for(let i=0;i<16;i++) meteors.push(makeMeteor());
+setInterval(function(){ if(meteors.length < 42) meteors.push(makeMeteor()); }, 260);
 
 // 点夜空
 cv.addEventListener('click', function(e){
   const m = makeMeteor();
-  m.x = e.clientX + 200;
-  m.y = e.clientY - 300;
+  m.x = e.clientX + 220;
+  m.y = e.clientY - 260;
   meteors.push(m);
 });
 
